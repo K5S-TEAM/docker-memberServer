@@ -18,6 +18,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 @Controller
 @RequiredArgsConstructor
 public class MemberConvenienceController {
@@ -26,6 +29,12 @@ public class MemberConvenienceController {
 
     @Value("${msa.auth}")
     String authServerUrl;
+
+    @GetMapping
+    @ResponseBody
+    public String home(){
+        return "hi";
+    }
 
     @GetMapping("/member/my-page")
     public String myPage(@CookieValue(value = "accessToken", required = false) String accessToken, Model model) {
@@ -70,7 +79,11 @@ public class MemberConvenienceController {
     }
 
     @ExceptionHandler
-    public String invalidAuthenticationExceptionHandler(InvalidAuthenticationException e) {
+    public String invalidAuthenticationExceptionHandler(InvalidAuthenticationException e, HttpServletResponse response) {
+        Cookie myCookie = new Cookie("accessToken", null);
+        myCookie.setMaxAge(0);
+        myCookie.setPath("/");
+        response.addCookie(myCookie);
         return "redirect:" + authServerUrl + "/auth/login";
     }
 
